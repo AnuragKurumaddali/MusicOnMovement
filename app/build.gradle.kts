@@ -47,6 +47,11 @@ dependencies {
     implementation("androidx.camera:camera-camera2:1.2.0") // Camera2 implementation
     implementation("androidx.camera:camera-lifecycle:1.2.0") // Lifecycle support
     implementation("androidx.camera:camera-view:1.1.0-beta01") // CameraView for PreviewView
+
+    // ML Kit Pose Detection
+    implementation("com.google.mlkit:pose-detection:18.0.0-beta3")
+    implementation("com.google.mlkit:pose-detection-accurate:18.0.0-beta3")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

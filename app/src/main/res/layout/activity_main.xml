@@ -8,4 +8,11 @@
         android:id="@+id/cameraPreview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <!-- Overlay for drawing tracked gestures -->
+    <com.vajra.musiconmovement.GestureOverlayView
+        android:id="@+id/gesture_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center" />
 </FrameLayout>

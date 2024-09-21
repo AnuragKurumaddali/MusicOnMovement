@@ -2,24 +2,37 @@ package com.vajra.musiconmovement
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.PointF
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.pose.Pose
+import com.google.mlkit.vision.pose.PoseDetection
+import com.google.mlkit.vision.pose.PoseDetector
+import com.google.mlkit.vision.pose.defaults.PoseDetectorOptions
+import java.util.ArrayList
 
 class MainActivity : AppCompatActivity() {
     private var cameraPreview: PreviewView? = null
+    private var poseDetector: PoseDetector? = null
+    private var gestureOverlay: GestureOverlayView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         cameraPreview = findViewById(R.id.cameraPreview)
+        gestureOverlay = findViewById(R.id.gesture_overlay)
 
         initCamera()
+
+        initPoseDetector()
     }
 
     private fun initCamera() {
@@ -50,6 +63,50 @@ class MainActivity : AppCompatActivity() {
                     it.setSurfaceProvider(cameraPreview?.surfaceProvider)
                 }
 
+            // ImageAnalysis use case to process the camera frames
+            val imageAnalyzer = ImageAnalysis.Builder()
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build()
+                .also { analysisUseCase ->
+                    analysisUseCase.setAnalyzer(ContextCompat.getMainExecutor(this)) { imageProxy ->
+                        @androidx.camera.core.ExperimentalGetImage
+                        val mediaImage = imageProxy.image
+                        if (mediaImage != null) {
+                            // Convert ImageProxy to InputImage
+                            val image = InputImage.fromMediaImage(
+                                mediaImage,
+                                imageProxy.imageInfo.rotationDegrees
+                            )
+
+                            // Process the image using ML Kit Pose Detector
+                            poseDetector?.process(image)
+                                ?.addOnSuccessListener { pose: Pose ->
+                                    // Extract pose landmarks and send OSC message
+                                    val points: MutableList<PointF> = ArrayList()
+                                    for (landmark in pose.allPoseLandmarks) {
+                                        points.add(PointF(landmark.position.x, landmark.position.y))
+                                    }
+
+                                    // Update the overlay with detected pose points
+                                    runOnUiThread { gestureOverlay?.setGesturePoints(points) }
+
+                                    // Close the ImageProxy after processing
+                                    imageProxy.close()
+                                }
+                                ?.addOnFailureListener { e: Exception ->
+                                    // Handle failure (e.g., log the error)
+                                    e.printStackTrace()
+
+                                    // Always close the ImageProxy after processing
+                                    imageProxy.close()
+                                }
+                        } else {
+                            // Close the ImageProxy if no media image is available
+                            imageProxy.close()
+                        }
+                    }
+                }
+
             // Select the back camera as the default
             val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
 
@@ -58,11 +115,19 @@ class MainActivity : AppCompatActivity() {
                 cameraProvider.unbindAll()
 
                 // Bind use cases to the lifecycle (Preview + ImageAnalysis)
-                cameraProvider.bindToLifecycle(this, cameraSelector, preview)
+                cameraProvider.bindToLifecycle(this, cameraSelector, preview,imageAnalyzer)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun initPoseDetector(){
+        // Initialize Pose Detector
+        val options: PoseDetectorOptions = PoseDetectorOptions.Builder()
+            .setDetectorMode(PoseDetectorOptions.STREAM_MODE)
+            .build()
+        poseDetector = PoseDetection.getClient(options)
     }
 
     // Handle permission result
