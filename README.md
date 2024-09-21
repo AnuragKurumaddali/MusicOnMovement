@@ -40,6 +40,9 @@ The app requires camera access to function properly. If the camera permission is
 - **IP and Port Configuration:** The OSC destination IP and port can be modified in the `setupOSC` method of the `MainActivity`.<br/>
 - **Gesture Data Customization:** The app is currently configured to send only the first landmark's x and y coordinates, but it can be modified to send multiple points or other attributes (such as velocity or angle) by adjusting the `sendOscMessage` function.
 
+**Dependency:** <br/>
+- For Receiving Sent OSC Messages and Playing the sound using received frequency and amplitude Use the dependent Client App : https://github.com/AnuragKurumaddali/MusicOnMovementsReceiver.git
+
 **References**
 - **Google ML Kit Pose Detection:**
   * https://github.com/icanerdogan/Google-MLKit-Android-Apps/tree/master/Vision%20-%20Kotlin%20%20/PoseDetection
