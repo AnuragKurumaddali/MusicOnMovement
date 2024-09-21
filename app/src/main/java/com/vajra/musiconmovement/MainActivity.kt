@@ -149,7 +149,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupOSC() {
         try {
-            val remoteIP = InetAddress.getByName("192.168.0.163")//Provide the Server-Ip
+            val remoteIP = InetAddress.getByName("192.168.0.100")//Provide the Server-Ip
             oscPortOut = OSCPortOut(remoteIP, 8000)
         } catch (e: Exception) {
             e.printStackTrace()
