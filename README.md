@@ -50,8 +50,9 @@ The app requires camera access to function properly. If the camera permission is
   * https://github.com/hoijui/JavaOSC/
   * https://github.com/sparks/javaosc/
 
-######################################################################################################################################################################################################################
-**Prerequisites**<br/>
+######################################################################################################################################################################################################################<br/>
+
+### Prerequisites<br/>
 Before you begin, make sure you have the following:<br/>
 
 **1. Android Studio:** Installed and updated to the latest version.<br/>
@@ -59,7 +60,7 @@ Before you begin, make sure you have the following:<br/>
 **3. A physical Android device:** Required for testing, as the app uses the camera and device sensors.<br/>
 **4. USB Debugging Enabled:** On your Android device.<br/>
 
-**Step-by-Step Guide**<br/>
+## Step-by-Step Guide<br/>
 
 **Step 1: Clone the Repository**<br/>
 
