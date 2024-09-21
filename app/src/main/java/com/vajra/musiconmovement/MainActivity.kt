@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.PointF
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -17,12 +18,20 @@ import com.google.mlkit.vision.pose.Pose
 import com.google.mlkit.vision.pose.PoseDetection
 import com.google.mlkit.vision.pose.PoseDetector
 import com.google.mlkit.vision.pose.defaults.PoseDetectorOptions
+import javaosc.OSCMessage
+import javaosc.OSCPortOut
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.net.InetAddress
 import java.util.ArrayList
 
 class MainActivity : AppCompatActivity() {
     private var cameraPreview: PreviewView? = null
     private var poseDetector: PoseDetector? = null
     private var gestureOverlay: GestureOverlayView? = null
+    private var oscPortOut: OSCPortOut? = null
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +40,8 @@ class MainActivity : AppCompatActivity() {
         gestureOverlay = findViewById(R.id.gesture_overlay)
 
         initCamera()
+
+        setupOSC()
 
         initPoseDetector()
     }
@@ -90,6 +101,12 @@ class MainActivity : AppCompatActivity() {
                                     // Update the overlay with detected pose points
                                     runOnUiThread { gestureOverlay?.setGesturePoints(points) }
 
+                                    // Send OSC message for the first landmark
+                                    if (points.isNotEmpty()) {
+                                        val firstPoint = points[0]
+                                        sendOscMessage(firstPoint.x, firstPoint.y)
+                                    }
+
                                     // Close the ImageProxy after processing
                                     imageProxy.close()
                                 }
@@ -128,6 +145,34 @@ class MainActivity : AppCompatActivity() {
             .setDetectorMode(PoseDetectorOptions.STREAM_MODE)
             .build()
         poseDetector = PoseDetection.getClient(options)
+    }
+
+    private fun setupOSC() {
+        try {
+            val remoteIP = InetAddress.getByName("192.168.0.163")//Provide the Server-Ip
+            oscPortOut = OSCPortOut(remoteIP, 8000)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun sendOscMessage(x: Float, y: Float) {
+        coroutineScope.launch {
+            try {
+                val args: MutableList<Any?> = ArrayList()
+                args.add(x)
+                args.add(y)
+                val argsArray: Array<Any?> = args.toTypedArray()
+                val message = OSCMessage("/gesture/coordinates", argsArray)
+                if(message.arguments.size == 2) {
+                    Log.e("aaa", "X : ${message.arguments[0]}")
+                    Log.e("aaa", "Y : ${message.arguments[1]}")
+                }
+                oscPortOut?.send(message)
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     // Handle permission result
