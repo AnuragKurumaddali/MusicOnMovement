@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MusicOnMovement</string>
+    <string name="permission_camera_access_required">Camera access is required, please enable it</string>
+    <string name="mandatory_permission_access_required">Camera access is required, please enable it in settings</string>
 </resources>

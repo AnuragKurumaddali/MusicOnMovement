@@ -42,6 +42,11 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    // CameraX dependencies
+    implementation("androidx.camera:camera-core:1.2.0")
+    implementation("androidx.camera:camera-camera2:1.2.0") // Camera2 implementation
+    implementation("androidx.camera:camera-lifecycle:1.2.0") // Lifecycle support
+    implementation("androidx.camera:camera-view:1.1.0-beta01") // CameraView for PreviewView
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
